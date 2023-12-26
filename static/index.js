@@ -9,7 +9,6 @@ function play() {
   audio.currentTime = 0;
   audio.play();
   tapButton.focus();
-  // tapButton.click();
 }
 
 function stop() {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"clone-hero-bpm-tapper/internal"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -20,11 +21,6 @@ var songDirectory = "songs"
 var chartDirectory = "charts"
 
 var songs []string
-
-type SongInfo struct {
-	Name   string `json:"name"`
-	Artist string `json:"artist"`
-}
 
 func prepareSongDirectory() error {
 	os.Mkdir(songDirectory, 0775)
@@ -70,14 +66,14 @@ func HandleSong(w http.ResponseWriter, r *http.Request) {
 
 func HandleChart(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		var songInfo SongInfo
-		err := json.NewDecoder(r.Body).Decode(&songInfo)
+		var chartInfo internal.ChartInfo
+		err := json.NewDecoder(r.Body).Decode(&chartInfo)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(422)
 			return
 		}
-		err = writeChartFile(songInfo)
+		err = writeChartFile(chartInfo)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(500)
@@ -89,14 +85,16 @@ func HandleChart(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func writeChartFile(songInfo SongInfo) error {
-	fileName := fmt.Sprintf("%s-%s.chart", songInfo.Artist, songInfo.Name)
+func writeChartFile(chartInfo internal.ChartInfo) error {
+	fileName := fmt.Sprintf("%s-%s.chart", chartInfo.Artist, chartInfo.Name)
 	filePath := filepath.Join(chartDirectory, fileName)
 	f, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
+
+	internal.CalculateBPMParts(tapTimes, chartInfo)
 
 	f.WriteString(fmt.Sprintf(`[Song]
 {
@@ -105,8 +103,8 @@ func writeChartFile(songInfo SongInfo) error {
 }
 [SyncTrack]
 {
-	
-}`, songInfo.Name, songInfo.Artist))
+
+}`, chartInfo.Name, chartInfo.Artist))
 	return nil
 }
 
