@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Audio Tap Tempo</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main>
+      <h2>Tap Tempo Calculator</h2>
+      <audio id="audio" src=""></audio>
+
+      <div class="separator"></div>
+
+      <section>
+        <h3>Upload</h3>
+        <input id="upload-file" type="file" />
+      </section>
+
+      <div class="separator"></div>
+      <section>
+        <h3>Controls</h3>
+        <div>
+          <label>Select a song:</label>
+          <select id="songs"></select>
+        </div>
+        <br />
+        <button id="play" onclick="play()">Play</button>
+        <button onclick="stop()">Stop</button>
+        <button id="tap" onclick="tap()">Tap</button>
+        <button onclick="reset()">Reset</button>
+        <div id="waveform"></div>
+      </section>
+      <div class="separator"></div>
+      <section>
+        <h3>Calculation</h3>
+        <div>
+          <input id="taps-average" type="number" value="8" />
+          <label>taps average</label>
+        </div>
+        <br />
+        <button id="calc" onclick="calcBPM()">Calculate</button>
+        <input type="number" id="bpm" disabled /> BPM (average)
+        <ul id="bpms"></ul>
+      </section>
+      <div class="separator"></div>
+      <section>
+        <h3>Download</h3>
+        <table>
+          <tbody>
+            <tr>
+              <td>Song</td>
+              <td><input id="name" type="text" /></td>
+            </tr>
+            <tr>
+              <td>Artist</td>
+              <td><input id="artist" type="text" /></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button id="download" onclick="download()">Download chart file</button>
+      </section>
+    </main>
+    <script src="/index.js"></script>
+  </body>
+</html>
