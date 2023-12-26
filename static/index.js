@@ -89,6 +89,16 @@ async function download() {
   });
 }
 
+document.getElementById("download-form").onsubmit = async (event) => {
+  const form = event.target;
+  const formData = new FormData(form);
+  const response = await fetch("/api/charts", {
+    method: "POST",
+    body: formData,
+  });
+  event.preventDefault();
+};
+
 function calcAverageBPM() {
   if (tapTimes.length < 2) {
     return;
@@ -128,4 +138,21 @@ document.getElementById("songs").onchange = (e) => {
 
 window.onload = async () => {
   await updateSongs();
+};
+
+document.getElementById("upload-file").onchange = async (event) => {
+  const form = document.getElementById("upload-form");
+  const formData = new FormData(document.getElementById("upload-form"));
+  const response = await fetch("/api/songs", {
+    method: "POST",
+    body: formData,
+  });
+  if (response.ok) {
+    document.getElementById(
+      "upload-info"
+    ).innerText = `Successfully uploaded ${event.target.value}`;
+    event.target.value = "";
+  }
+
+  event.preventDefault();
 };

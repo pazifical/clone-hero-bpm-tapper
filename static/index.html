@@ -16,7 +16,10 @@
 
       <section>
         <h3>Upload</h3>
-        <input id="upload-file" type="file" />
+        <form id="upload-form" enctype="multipart/form-data">
+          <input id="upload-file" name="file" type="file" />
+        </form>
+        <p id="upload-info"></p>
       </section>
 
       <div class="separator"></div>
@@ -35,48 +38,40 @@
       </section>
       <div class="separator"></div>
       <section>
-        <h3>Calculation</h3>
-        <div>
-          <input id="taps-average" type="number" value="8" />
-          <label>taps average</label>
-        </div>
-        <br />
-        <button id="calc" onclick="calcBPM()">Calculate</button>
-        <input type="number" id="bpm" disabled /> BPM (average)
-        <ul id="bpms"></ul>
-      </section>
-      <div class="separator"></div>
-      <section>
         <h3>Download</h3>
-        <table>
-          <tbody>
-            <tr>
-              <td>Song</td>
-              <td><input id="name" type="text" required /></td>
-            </tr>
-            <tr>
-              <td>Artist</td>
-              <td><input id="artist" type="text" required /></td>
-            </tr>
-            <tr>
-              <td>Average Beat Count</td>
-              <td>
-                <input
-                  id="average_beat_count"
-                  type="number"
-                  value="8"
-                  required
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Factor</td>
-              <td><input id="factor" type="number" value="1" required /></td>
-            </tr>
-          </tbody>
-        </table>
-
-        <button id="download" onclick="download()">Download chart file</button>
+        <form id="download-form">
+          <div style="display: flex; gap: 1rem">
+            <div>
+              <label for="name">Song name</label>
+              <input id="name" name="name" type="text" required />
+            </div>
+            <div>
+              <label for="artist">Artist</label>
+              <input id="artist" name="artist" type="text" required />
+            </div>
+            <div>
+              <label for="average_beat_count">Average beat count</label>
+              <input
+                id="average_beat_count"
+                name="average_beat_count"
+                type="number"
+                value="8"
+                required
+              />
+            </div>
+            <div>
+              <label for="factor">Factor</label>
+              <input
+                id="factor"
+                name="factor"
+                type="number"
+                value="1"
+                required
+              />
+            </div>
+          </div>
+          <button id="download">Download chart file</button>
+        </form>
       </section>
     </main>
     <script src="/index.js"></script>

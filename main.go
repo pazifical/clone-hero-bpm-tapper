@@ -1,15 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"clone-hero-bpm-tapper/internal"
 	"embed"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 //go:embed static
@@ -44,8 +48,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(fileSystem)
 
-	http.Handle("/", http.FileServer(http.FS(fileSystem)))
+	// http.Handle("/", http.FileServer(http.FS(fileSystem)))
+	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.Handle("/songs/", http.StripPrefix("/songs/", http.FileServer(http.Dir("./songs"))))
 	http.HandleFunc("/api/songs", HandleSong)
 	http.HandleFunc("/api/charts", HandleChart)
@@ -59,6 +65,45 @@ func HandleSong(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(songs)
+	} else if r.Method == "POST" {
+		fmt.Println("SONG POST")
+		err := r.ParseMultipartForm(32 << 20)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(422)
+			return
+		}
+
+		var buf bytes.Buffer
+
+		file, header, err := r.FormFile("file")
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(422)
+			return
+		}
+		defer file.Close()
+		name := strings.Split(header.Filename, ".")
+		fmt.Printf("File name %s\n", name[0])
+
+		_, err = io.Copy(&buf, file)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(422)
+			return
+		}
+
+		f, err := os.Create(filepath.Join(songDirectory, header.Filename))
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(422)
+			return
+		}
+		defer f.Close()
+		f.Write(buf.Bytes())
+		buf.Reset()
+
+		w.WriteHeader(200)
 	} else {
 		w.WriteHeader(405)
 	}
@@ -66,13 +111,32 @@ func HandleSong(w http.ResponseWriter, r *http.Request) {
 
 func HandleChart(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		var chartInfo internal.ChartInfo
-		err := json.NewDecoder(r.Body).Decode(&chartInfo)
+		err := r.ParseMultipartForm(100000)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(422)
 			return
 		}
+		factor, err := strconv.ParseFloat(r.FormValue("factor"), 64)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(422)
+			return
+		}
+		abc, err := strconv.Atoi(r.FormValue("average_beat_count"))
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(422)
+			return
+		}
+
+		chartInfo := internal.ChartInfo{
+			Name:             r.FormValue("name"),
+			Artist:           r.FormValue("artist"),
+			Factor:           factor,
+			AverageBeatCount: abc,
+		}
+
 		err = writeChartFile(chartInfo)
 		if err != nil {
 			log.Println(err)
