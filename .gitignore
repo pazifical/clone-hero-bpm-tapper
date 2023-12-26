@@ -22,3 +22,5 @@ go.work
 
 charts/
 songs/
+
+.DS_Store
