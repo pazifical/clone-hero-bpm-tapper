@@ -7,21 +7,22 @@ document.getElementById("play").focus();
 
 function play() {
   audio.currentTime = 0;
+  tapTimes.push(0);
   audio.play();
   tapButton.focus();
 }
 
-function stop() {
+async function stop() {
   audio.pause();
-  document.getElementById("calc").focus();
 
-  fetch("/api/taps", {
+  let response = await fetch("/api/taps", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(tapTimes),
   });
+  console.log(response);
 }
 
 function reset() {
@@ -76,18 +77,19 @@ function calcPartsBPM() {
   document.getElementById("bpms").innerHTML = listItems.join("");
 }
 
-async function download() {
-  const response = fetch("/api/charts", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      name: document.getElementById("name").value,
-      artist: document.getElementById("artist").value,
-    }),
-  });
-}
+// async function download(event) {
+//   const response = fetch("/api/charts", {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify({
+//       name: document.getElementById("name").value,
+//       artist: document.getElementById("artist").value,
+//     }),
+//   });
+//   event.preventDefault();
+// }
 
 document.getElementById("download-form").onsubmit = async (event) => {
   const form = event.target;
@@ -97,6 +99,7 @@ document.getElementById("download-form").onsubmit = async (event) => {
     body: formData,
   });
   event.preventDefault();
+  return false;
 };
 
 function calcAverageBPM() {

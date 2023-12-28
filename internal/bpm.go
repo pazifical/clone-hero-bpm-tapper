@@ -10,17 +10,19 @@ type BPMPart struct {
 }
 
 type ChartInfo struct {
-	Name             string  `json:"name"`
-	Artist           string  `json:"artist"`
-	AverageBeatCount int     `json:"average_beat_count"`
-	Factor           float64 `json:"factor"`
+	Name             string `json:"name"`
+	Artist           string `json:"artist"`
+	AverageBeatCount int    `json:"average_beat_count"`
+	BeatsPerBar      int    `json:"beats_per_bar"`
 }
 
 func CalculateBPMParts(tapTimes []float64, chartInfo ChartInfo) []BPMPart {
 	bpmParts := make([]BPMPart, 0)
 	i := 0
+	r := 0
 	n := chartInfo.AverageBeatCount
-	for i < len(tapTimes)-n {
+	factor := chartInfo.AverageBeatCount / chartInfo.BeatsPerBar
+	for i < len(tapTimes)-n+1 {
 		currentTapTimes := tapTimes[i:(i + n)]
 		fmt.Println(currentTapTimes)
 
@@ -37,10 +39,11 @@ func CalculateBPMParts(tapTimes []float64, chartInfo ChartInfo) []BPMPart {
 			T0:       tapTimes[i],
 			T1:       tapTimes[i+n-1],
 			BPM:      bpm,
-			Position: 192 * (i + 1),
+			Position: 192 * r * chartInfo.BeatsPerBar * factor,
 		})
 
 		i += (n - 1)
+		r += 1
 	}
 	return bpmParts
 }

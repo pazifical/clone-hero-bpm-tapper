@@ -117,7 +117,7 @@ func HandleChart(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(422)
 			return
 		}
-		factor, err := strconv.ParseFloat(r.FormValue("factor"), 64)
+		beatsPerBar, err := strconv.Atoi(r.FormValue("beats_per_bar"))
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(422)
@@ -133,7 +133,7 @@ func HandleChart(w http.ResponseWriter, r *http.Request) {
 		chartInfo := internal.ChartInfo{
 			Name:             r.FormValue("name"),
 			Artist:           r.FormValue("artist"),
-			Factor:           factor,
+			BeatsPerBar:      beatsPerBar,
 			AverageBeatCount: abc,
 		}
 
@@ -158,7 +158,13 @@ func writeChartFile(chartInfo internal.ChartInfo) error {
 	}
 	defer f.Close()
 
-	internal.CalculateBPMParts(tapTimes, chartInfo)
+	bpmParts := internal.CalculateBPMParts(tapTimes, chartInfo)
+	var builder strings.Builder
+	for _, bpmPart := range bpmParts {
+		builder.WriteString(fmt.Sprintf("  %d = B %d\n", bpmPart.Position, int64(1000*bpmPart.BPM)))
+	}
+	bpmPartsLines := builder.String()
+	fmt.Println(bpmPartsLines)
 
 	f.WriteString(fmt.Sprintf(`[Song]
 {
@@ -167,8 +173,7 @@ func writeChartFile(chartInfo internal.ChartInfo) error {
 }
 [SyncTrack]
 {
-
-}`, chartInfo.Name, chartInfo.Artist))
+%s}`, chartInfo.Name, chartInfo.Artist, bpmPartsLines))
 	return nil
 }
 
@@ -187,6 +192,7 @@ func HandleTaps(w http.ResponseWriter, r *http.Request) {
 		}
 		tapTimes = times
 		w.WriteHeader(200)
+		log.Printf("INFO: received taps: %v", tapTimes)
 		log.Println(tapTimes)
 	} else {
 		w.WriteHeader(405)
