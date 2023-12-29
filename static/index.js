@@ -22,6 +22,10 @@ async function stop() {
     },
     body: JSON.stringify(tapTimes),
   });
+
+  document.getElementById(
+    "info"
+  ).innerHTML = `First tap: <strong>${tapTimes[0]}</strong> seconds.`;
   console.log(response);
 }
 
