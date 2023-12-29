@@ -30,11 +30,19 @@ func prepareSongDirectory() error {
 	os.Mkdir(songDirectory, 0775)
 	os.Mkdir(chartDirectory, 0775)
 
+	err := readSongs()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func readSongs() error {
 	files, err := os.ReadDir(songDirectory)
 	if err != nil {
 		return err
 	}
-
+	songs = make([]string, 0)
 	for _, file := range files {
 		songs = append(songs, file.Name())
 	}
@@ -58,7 +66,7 @@ func main() {
 	http.HandleFunc("/api/taps", HandleTaps)
 
 	log.Println("Serving")
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Fatal(http.ListenAndServe(":12345", nil))
 }
 
 func HandleSong(w http.ResponseWriter, r *http.Request) {

@@ -7,7 +7,7 @@ document.getElementById("play").focus();
 
 function play() {
   audio.currentTime = 0;
-  tapTimes.push(0);
+  // tapTimes.push(0);
   audio.play();
   tapButton.focus();
 }
