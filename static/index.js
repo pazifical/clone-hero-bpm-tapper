@@ -96,13 +96,14 @@ function calcPartsBPM() {
 // }
 
 document.getElementById("download-form").onsubmit = async (event) => {
+  event.preventDefault();
   const form = event.target;
   const formData = new FormData(form);
   const response = await fetch("/api/charts", {
     method: "POST",
     body: formData,
   });
-  event.preventDefault();
+  console.log(response)
   return false;
 };
 
@@ -148,6 +149,7 @@ window.onload = async () => {
 };
 
 document.getElementById("upload-file").onchange = async (event) => {
+  console.log("upload file")
   const form = document.getElementById("upload-form");
   const formData = new FormData(document.getElementById("upload-form"));
   const response = await fetch("/api/songs", {

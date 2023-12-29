@@ -21,6 +21,8 @@ var static embed.FS
 
 var tapTimes []float64
 
+var port = 12345
+
 var songDirectory = "songs"
 var chartDirectory = "charts"
 
@@ -58,23 +60,28 @@ func main() {
 	}
 	fmt.Println(fileSystem)
 
-	// http.Handle("/", http.FileServer(http.FS(fileSystem)))
-	http.Handle("/", http.FileServer(http.Dir("static")))
+	http.Handle("/", http.FileServer(http.FS(fileSystem)))
+	// http.Handle("/", http.FileServer(http.Dir("static")))
 	http.Handle("/songs/", http.StripPrefix("/songs/", http.FileServer(http.Dir("./songs"))))
 	http.HandleFunc("/api/songs", HandleSong)
 	http.HandleFunc("/api/charts", HandleChart)
 	http.HandleFunc("/api/taps", HandleTaps)
 
-	log.Println("Serving")
-	log.Fatal(http.ListenAndServe(":12345", nil))
+	log.Println("Open a web browser and go to http://localhost:12345")
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }
 
 func HandleSong(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(songs)
+		err := readSongs()
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(422)
+			return
+		}
 	} else if r.Method == "POST" {
-		fmt.Println("SONG POST")
 		err := r.ParseMultipartForm(32 << 20)
 		if err != nil {
 			log.Println(err)
@@ -92,7 +99,7 @@ func HandleSong(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 		name := strings.Split(header.Filename, ".")
-		fmt.Printf("File name %s\n", name[0])
+		log.Printf("INFO: received song %s", name[0])
 
 		_, err = io.Copy(&buf, file)
 		if err != nil {
@@ -119,6 +126,7 @@ func HandleSong(w http.ResponseWriter, r *http.Request) {
 
 func HandleChart(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
+		fmt.Println("post")
 		err := r.ParseMultipartForm(100000)
 		if err != nil {
 			log.Println(err)
@@ -160,6 +168,7 @@ func HandleChart(w http.ResponseWriter, r *http.Request) {
 func writeChartFile(chartInfo internal.ChartInfo) error {
 	fileName := fmt.Sprintf("%s-%s.chart", chartInfo.Artist, chartInfo.Name)
 	filePath := filepath.Join(chartDirectory, fileName)
+	log.Printf("INFO: writing to '%s'", filePath)
 	f, err := os.Create(filePath)
 	if err != nil {
 		return err
